@@ -1,13 +1,16 @@
-import wandb
 import os
-from utils import set_seed
-import random
 import torch
-from torch import nn, optim
-from torch.utils.data import DataLoader
+import wandb
+import random
 import argparse
-from torchvision.models import resnet18
+import pandas as pd
 from tqdm import tqdm
+from PIL import Image
+from utils import set_seed
+from torch import nn, optim
+from torchvision import transforms
+from torchvision.models import resnet18
+from torch.utils.data import Dataset, DataLoader
 
 
 def get_scheduler(use_scheduler, optimizer, **kwargs):
@@ -43,6 +46,26 @@ def evaluate(model, data_loader, device):
     model.train()
     return val_acc, val_loss
 
+# Custom dataset class
+class OxfordPetDataset(Dataset):
+    def __init__(self, csv_file, root_dir, transform=None, split='train'):
+        self.data = pd.read_csv(csv_file)
+        self.data = self.data[self.data['split'] == split]
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        img_name = os.path.join(self.root_dir, self.data.iloc[index, 0])
+        image = Image.open(img_name).convert('RGB')
+        label = self.data.iloc[index,1]
+        if self.transform:
+            image = self.transform(image)
+        return image, label
+
+
 
 def train_model(
         run_name,
@@ -58,6 +81,11 @@ def train_model(
 
     # Complete the code below to load the dataset; you can customize the dataset class or use ImageFolder
     # Note that in your transform, you should include resize the image to 224x224, and normalize the image with appropriate mean and std
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
     train_set = None
     val_set = None
     test_set = None
