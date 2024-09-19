@@ -8,9 +8,9 @@ from tqdm import tqdm
 from PIL import Image
 from utils import set_seed
 from torch import nn, optim
-from torchvision import transforms
 from torchvision.models import resnet18
-from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms, datasets
+from torch.utils.data import DataLoader, random_split, Dataset
 
 
 def get_scheduler(use_scheduler, optimizer, **kwargs):
@@ -46,25 +46,32 @@ def evaluate(model, data_loader, device):
     model.train()
     return val_acc, val_loss
 
-# Custom dataset class
+
 class OxfordPetDataset(Dataset):
-    def __init__(self, csv_file, root_dir, transform=None, split='train'):
-        self.data = pd.read_csv(csv_file)
-        self.data = self.data[self.data['split'] == split]
-        self.root_dir = root_dir
+    def __init__(self, dataset, csv_file, split='train', transform=None):
+        self.dataset = dataset
+        self.df = pd.read_csv(csv_file)
+        self.df = self.df[self.df['split'] == split]  # Filter by train or test
         self.transform = transform
 
     def __len__(self):
-        return len(self.data)
+        return len(self.df)
 
-    def __getitem__(self, index):
-        img_name = os.path.join(self.root_dir, self.data.iloc[index, 0])
-        image = Image.open(img_name).convert('RGB')
-        label = self.data.iloc[index,1]
+    def __getitem__(self, idx):
+        # Get image
+        img_name = self.df.iloc[idx]['image_name']
+        img_idx = self.dataset._filename_to_idx[img_name]  # Map filename to index in the dataset
+        image = self.dataset.images[img_idx]
+
+        # Image tansform
+        image = Image.open(image).convert('RGB')
         if self.transform:
             image = self.transform(image)
-        return image, label
 
+        # Get the label
+        label = self.df.iloc[idx]['label']
+
+        return image, label
 
 
 def train_model(
@@ -79,17 +86,17 @@ def train_model(
 ):
     model.to(device)
 
-    # Complete the code below to load the dataset; you can customize the dataset class or use ImageFolder
-    # Note that in your transform, you should include resize the image to 224x224, and normalize the image with appropriate mean and std
+    # Load dataset
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Using imagenet std and mean
     ])
-    train_set = None
-    val_set = None
-    test_set = None
-
+    dataset = datasets.OxfordIIIPet(root='data', download=True, transform=transform)
+    df = pd.read_csv('oxford_pet_split.csv')
+    train_set = OxfordPetDataset(dataset, df, split="train", transform = transform)
+    val_set = OxfordPetDataset(dataset, df, split="split", transform = transform)
+    test_set = OxfordPetDataset(dataset, df, split="val", transform = transform)
 
     n_train, n_val, n_test = len(train_set), len(val_set), len(test_set)
     loader_args = dict(batch_size=batch_size, num_workers=4)
@@ -102,12 +109,15 @@ def train_model(
 
     # Initialize a new wandb run and log experiment config parameters; don't forget the run name
     # you can also set run name to reflect key hyperparameters, such as learning rate, batch size, etc.: run_name = f'lr_{learning_rate}_bs_{batch_size}...'
-    # code here
+    wandb.init(project="277 hw1", name=run_name, config={
+        "epoch": epochs,
+        "learning_rate": learning_rate,
+        "batch_size": batch_size,
+    })
 
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = get_scheduler(use_scheduler, optimizer, max_lr=learning_rate,
-                              total_steps=total_training_steps, pct_start=0.1, final_div_factor=10)
+    scheduler = get_scheduler(use_scheduler, optimizer, max_lr=learning_rate, total_steps=total_training_steps, pct_start=0.1, final_div_factor=10)
 
     criterion = nn.CrossEntropyLoss()
 
