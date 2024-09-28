@@ -4,6 +4,7 @@ import wandb
 import random
 import argparse
 import pandas as pd
+from docutils.nodes import math
 from tqdm import tqdm
 from PIL import Image
 from utils import set_seed
@@ -76,6 +77,16 @@ class OxfordPetDataset(Dataset):
         return image, label
 
 
+def scale_learning_rate(old_batch_size, new_batch_size, learning_rate, beta1, beta2, epsilon):
+    k = new_batch_size / old_batch_size
+    sqrt_k = math.sqrt(k)
+    scaled_lr = sqrt_k * learning_rate
+    scaled_beta1 = 1 - k * (1 - beta1)
+    scaled_beta2 = 1 - k * (1 - beta2)
+    scaled_epsilon = epsilon / sqrt_k
+    return scaled_lr, scaled_beta1, scaled_beta2, scaled_epsilon
+
+
 def train_model(
         run_name,
         model,
@@ -85,7 +96,13 @@ def train_model(
         device,
         save_dir,
         use_scheduler,
-        rid
+        rid,
+        # For scaling learning rate
+        scaled_train=False,
+        old_batch_size=None,
+        beta1=0.9,
+        beta2=0.99,
+        epsilon=1e-8,
 ):
     model.to(device)
 
@@ -109,8 +126,9 @@ def train_model(
     val_loader = DataLoader(val_set, shuffle=False, **loader_args)
     test_loader = DataLoader(test_set, shuffle=False, **loader_args)
 
+    if scaled_train and old_batch_size is not None:
+        learning_rate, beta1, beta2, epsilon = scale_learning_rate(old_batch_size, batch_size, learning_rate, beta1, beta2, epsilon)
     # Initialize a new wandb run and log experiment config parameters; don't forget the run name
-    # you can also set run name to reflect key hyperparameters, such as learning rate, batch size, etc.: run_name = f'lr_{learning_rate}_bs_{batch_size}...'
     wandb.init(
         project="277 hw1",
         name=run_name,
@@ -120,7 +138,12 @@ def train_model(
             "batch_size": batch_size,
             "scheduler": use_scheduler,
             "total_training_steps": total_training_steps,
-            "model": "ResNet-18"
+            "model": "ResNet-18",
+            "scaled_train": scaled_train,
+            "old_batch_size": old_batch_size,
+            "beta1": beta1,
+            "beta2": beta2,
+            "epsilon": epsilon,
         }
     )
 
@@ -266,22 +289,22 @@ def get_args():
 if __name__ == '__main__':
 
     # 1.1 & 1.22 OneCycleLR Scheduler
-    rid = random.randint(0, 1000000)
-    set_seed(42)
-    args = get_args()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = resnet18(pretrained=False, num_classes=37)
-    train_model(
-        run_name=args.run_name,
-        model=model,
-        batch_size=args.batch_size,
-        epochs=args.epochs,
-        learning_rate=args.lr,
-        device=device,
-        save_dir=args.save_dir,
-        use_scheduler=args.use_scheduler,
-        rid=rid
-    )
+    # rid = random.randint(0, 1000000)
+    # set_seed(42)
+    # args = get_args()
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # model = resnet18(pretrained=False, num_classes=37)
+    # train_model(
+    #     run_name=args.run_name,
+    #     model=model,
+    #     batch_size=args.batch_size,
+    #     epochs=args.epochs,
+    #     learning_rate=args.lr,
+    #     device=device,
+    #     save_dir=args.save_dir,
+    #     use_scheduler=args.use_scheduler,
+    #     rid=rid
+    # )
 
 
     # 1.21 Sweep Config
@@ -289,3 +312,25 @@ if __name__ == '__main__':
     # set_seed(42)
     # sweep_id = wandb.sweep(sweep = sweep_config, project="oxford_pet_classification_sweep")
     # wandb.agent(sweep_id, function=sweep_train)
+
+    # # 1.23 Scaling Learning rate
+    # rid = random.randint(0, 1000000)
+    # set_seed(42)
+    # args = get_args()
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # model = resnet18(pretrained=False, num_classes=37)
+    #
+    # for scale_train in [False, True]:
+    #     train_model(
+    #         run_name=f'{args.run_name}_{scale_train}_batch={args.batch_size}',
+    #         model=model,
+    #         batch_size=args.batch_size * 2,
+    #         epochs=args.epochs,
+    #         learning_rate=args.lr,
+    #         device=device,
+    #         save_dir=args.save_dir,
+    #         use_scheduler=args.use_scheduler,
+    #         rid=rid,
+    #         scale_train=scale_train,
+    #         old_batch_size=batch_size
+    #     )
