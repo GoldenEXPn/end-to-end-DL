@@ -1,0 +1,11 @@
+1.21
+python train.py --run_name "default"
+
+1.22
+python train.py --run_name "SweepTrain"
+
+1.23
+python train.py --run_name "ScaleTrain"
+
+1.24
+python train.py --run_name "Pretrained ResNet-18"

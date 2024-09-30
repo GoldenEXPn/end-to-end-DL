@@ -1,10 +1,12 @@
 import os
+import math
 import torch
 import wandb
 import random
 import argparse
 import pandas as pd
-from docutils.nodes import math
+from spacy.cli.train import train
+from torch.xpu import device
 from tqdm import tqdm
 from PIL import Image
 from utils import set_seed
@@ -313,6 +315,7 @@ if __name__ == '__main__':
     # sweep_id = wandb.sweep(sweep = sweep_config, project="oxford_pet_classification_sweep")
     # wandb.agent(sweep_id, function=sweep_train)
 
+
     # # 1.23 Scaling Learning rate
     # rid = random.randint(0, 1000000)
     # set_seed(42)
@@ -334,3 +337,36 @@ if __name__ == '__main__':
     #         scale_train=scale_train,
     #         old_batch_size=batch_size
     #     )
+
+
+    # 1.24 Finetune Pretrained
+    rid = random.randint(0, 1000000)
+    set_seed(42)
+    args = get_args()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = resnet18(pretrained=True)
+    num_classes = 37
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    train_model(
+        run_name=args.run_name,
+        model=model,
+        batch_size=args.batch_size,
+        epochs=args.epochs,
+        learning_rate=args.lr,
+        device=device,
+        save_dir=args.save_dir,
+        use_scheduler=args.use_scheduler,
+        rid=rid
+    )
+
+
+
+
+
+
+
+
+
+
+
+

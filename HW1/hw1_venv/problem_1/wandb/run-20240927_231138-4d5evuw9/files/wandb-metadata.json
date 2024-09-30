@@ -1,0 +1,36 @@
+{
+  "os": "Windows-10-10.0.22631-SP0",
+  "python": "3.11.5",
+  "startedAt": "2024-09-28T03:11:38.506392Z",
+  "args": [
+    "--run_name",
+    "Pretrained ResNet-18"
+  ],
+  "program": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW1\\hw1_venv\\problem_1\\train.py",
+  "codePath": "HW1\\hw1_venv\\problem_1\\train.py",
+  "git": {
+    "remote": "https://github.com/GoldenEXPn/CSC277.git",
+    "commit": "cd233fe267a7c4a545371597195a69eea6d61222"
+  },
+  "email": "tzhou25@u.rochester.edu",
+  "root": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW1\\hw1_venv\\problem_1",
+  "host": "DESKTOP-GVV906V",
+  "username": "Tianyi Z",
+  "executable": "C:\\Users\\Tianyi Z\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "codePathLocal": "train.py",
+  "cpu_count": 12,
+  "cpu_count_logical": 24,
+  "disk": {
+    "/": {
+      "total": "2047987412992",
+      "used": "1219489337344"
+    }
+  },
+  "memory": {
+    "total": "33442263040"
+  },
+  "cpu": {
+    "count": 12,
+    "countLogical": 24
+  }
+}
