@@ -66,16 +66,21 @@ lr_finder.reset()
 # functions used for post-train testing:
 # Dying ReLU Examination
 from utils.trained_models import get_trained_model
-trained_model = get_trained_model()
-
-
-
-
-'''
 # Model Robustness Test
 from utils.datasets import get_testset
 test_dataset = get_testset()
-'''
+test_loader = DataLoader(test_dataset, batch_size=32)
+
+
+# Check Dying ReLU
+trained_model = get_trained_model()
+check_leakage_using_hash(trained_model, )
+
+
+
+
+
+
 
 
 

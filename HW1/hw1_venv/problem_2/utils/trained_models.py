@@ -93,6 +93,17 @@ def get_hook(module, X, y):
 def check_dying_relu(model, train_loader):
     # Register for hook
     for layer in model.modules():
+        if isinstance(layer, nn.ReLU):
+            layer.register_forward_hook(get_hook)
+
+    # Forward pass to trigger hook
+    model.eval()
+    with torch.no_grad():
+        for inputs, _ in train_loader:
+            model(inputs)
+            break # Check for one batch
+
+
 
 
 
