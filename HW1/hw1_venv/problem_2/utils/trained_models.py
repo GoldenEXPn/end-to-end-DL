@@ -84,7 +84,8 @@ def get_trained_model():
 
 
 def get_hook(module, X, y):
-    num_zeros = torch.sum(y == 0).item()
+    y = y.detach()
+    num_zeros = (y==0).sum().item()
     total_neurons = y.numel()
     zero_percentage = num_zeros / total_neurons * 100
     print(f'Layer{module}: {zero_percentage:.2f}% of neuron are dead.')
@@ -92,15 +93,16 @@ def get_hook(module, X, y):
 
 def check_dying_relu(model, train_loader):
     # Register for hook
-    for layer in model.modules():
+    for name, layer in model.named_modules():
         if isinstance(layer, nn.ReLU):
+            print(f'Registering layer: {name}')
             layer.register_forward_hook(get_hook)
 
     # Forward pass to trigger hook
     model.eval()
     with torch.no_grad():
-        for inputs, _ in train_loader:
-            model(inputs)
+        for X, _ in train_loader:
+            model(X)
             break # Check for one batch
 
 
