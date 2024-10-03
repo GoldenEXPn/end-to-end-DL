@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+
 class Bottleneck(nn.Module):
     expansion = 4
 
@@ -82,30 +83,60 @@ def get_trained_model():
     model.load_state_dict(torch.load('ckpt/trained_model.pt', map_location='cpu'))
     return model
 
+def get_summary(relu_stats):
+    summary_stats = {
+        "20-30%": 0,
+        "30-50%": 0,
+        "above 50%": 0
+    }
+    for i, stat in enumerate(relu_stats):
+        if 20 <= stat < 30:
+            summary_stats["20-30%"] += 1
+        elif 30 <= stat < 50:
+            summary_stats["30-50%"] += 1
+        elif stat >= 50:
+            summary_stats["above 50%"] += 1
 
-def get_hook(module, X, y):
-    y = y.detach()
-    num_zeros = (y==0).sum().item()
-    total_neurons = y.numel()
-    zero_percentage = num_zeros / total_neurons * 100
-    print(f'Layer{module}: {zero_percentage:.2f}% of neuron are dead.')
+    # Print the summary
+    print("\nSummary of Dying ReLU Neuron Percentages:")
+    print(f"Layers with 20-30% dead neurons: {summary_stats['20-30%']}")
+    print(f"Layers with 30-50% dead neurons: {summary_stats['30-50%']}")
+    print(f"Layers with above 50% dead neurons: {summary_stats['above 50%']}")
 
 
-def check_dying_relu(model, train_loader):
-    # Register for hook
-    for name, layer in model.named_modules():
-        if isinstance(layer, nn.ReLU):
-            print(f'Registering layer: {name}')
-            layer.register_forward_hook(get_hook)
+## Function to test robustness
+# Test for brightness
+import wandb
+import torchvision
+from torch.utils.data import DataLoader
+from sklearn.metrics import accuracy_score
+from torchvision.transforms import transforms
 
-    # Forward pass to trigger hook
-    model.eval()
+def adjust_brightness(dataset, lamb):
+    transform = transforms.Compose([transforms.Lambda(lambda img: torchvision.transforms.functional.adjust_brightness(img, lamb)), transforms.ToTensor()])
+    dataset.transform = transform
+    return dataset
+
+def evaluate_model_brightness(trained_model, test_dataset, lamb):
+    test_dataset = adjust_brightness(test_dataset, lamb)
+    test_loader = DataLoader(test_dataset)
+    all_y, all_y_hat=[],[]
+    trained_model.eval()
     with torch.no_grad():
-        for X, _ in train_loader:
-            model(X)
-            break # Check for one batch
+        for inputs, labels in test_loader:
+            y = trained_model(inputs)
+            _, y = torch.max(y, 1)
+            all_y.extend(y.cpu().numpy())
+            all_y_hat.append(labels.cpu().numpy())
+    accuracy = accuracy_score(all_y_hat, all_y)
+    return accuracy
 
+def evaluate_brightness_robustness(trained_model, test_loader):
+    lambda_brightness = [0.2, 0.4, 0.6, 0.8, 1.0]
+    results = {}
 
+    for lamb in lambda_brightness:
+        accuracy = evaluate_model_brightness(trained_model, test_loader, lamb)
 
 
 

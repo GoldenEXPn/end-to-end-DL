@@ -1,6 +1,6 @@
-
 import torch
-
+import torch.nn.functional as F
+from contextlib import contextmanager
 
 
 # functions used for pre-train testing
@@ -67,22 +67,61 @@ lr_finder.reset()
 # Dying ReLU Examination
 # Model Robustness Test
 
-# functions used for post-train testing:
-from torch.utils.data import DataLoader
+
+## Check Dying ReLU
+'''from torch.utils.data import DataLoader
 from utils.datasets import get_testset
-from utils.trained_models import get_trained_model, check_dying_relu
+from utils.trained_models import get_trained_model, get_summary
 
 # Load test data
 test_dataset = get_testset()
 test_loader = DataLoader(test_dataset, batch_size=32)
-# Check Dying ReLU
+relu_stats = []
+original_relu = F.relu
+def custom_relu(X):
+    y = original_relu(X)
+    num_zeros = torch.sum(y == 0).item()
+    total_neurons = y.numel()
+    dead_percentage = num_zeros / total_neurons * 100
+    relu_stats.append(dead_percentage)
+    return y
+# Help to use with statement
+@contextmanager
+def capture_relu():
+    global original_relu
+    original_relu = F.relu
+    F.relu = custom_relu
+    try:
+        yield
+    finally:
+        F.relu = original_relu  # Restore the original F.relu after capturing
+
+def check_dying_relu(trained_model, data_loader):
+    # Reset relu_stats
+    global relu_stats
+    relu_stats = []
+    trained_model.eval()
+    with torch.no_grad():
+        with capture_relu():  # Capture F.relu and replace with custom relu for inspection
+            for inputs, _ in data_loader:
+                trained_model(inputs)
+                break
+    for i, stat in enumerate(relu_stats):
+        print(f"ReLU layer {i + 1}: {stat:.2f}% of neurons are dead.")
 trained_model = get_trained_model()
-+
+check_dying_relu(trained_model, test_loader)
+# Give summary
+get_summary(relu_stats)'''
 
+## Model Robustness
 
-
-
-
+# Brightness Test
+from torch.utils.data import DataLoader
+from utils.datasets import get_testset
+from utils.trained_models import get_trained_model
+test_dataset = get_testset()
+test_loader = DataLoader(test_dataset, batch_size=32)
+trained_model = get_trained_model()
 
 
 
