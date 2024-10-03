@@ -118,11 +118,11 @@ get_summary(relu_stats)'''
 # Brightness Test
 from torch.utils.data import DataLoader
 from utils.datasets import get_testset
-from utils.trained_models import get_trained_model
+from utils.trained_models import get_trained_model, evaluate_brightness_robustness
 test_dataset = get_testset()
 test_loader = DataLoader(test_dataset, batch_size=32)
 trained_model = get_trained_model()
-
+evaluate_brightness_robustness(trained_model, test_loader)
 
 
 

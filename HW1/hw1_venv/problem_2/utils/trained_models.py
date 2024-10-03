@@ -137,8 +137,18 @@ def evaluate_brightness_robustness(trained_model, test_loader):
 
     for lamb in lambda_brightness:
         accuracy = evaluate_model_brightness(trained_model, test_loader, lamb)
+        results[lamb] = accuracy
+        wandb.log({'lambda': lamb, 'accuracy': accuracy})
 
-
+    # Plot final curve
+    wandb.log({'accuracy_curve': wandb.plot.line_series(
+        xs = list(results.keys()),
+        ys = list(results.values()),
+        keys=["Accuracy"],
+        title="Model Accuracy vs. Brightness",
+        xname="Brightness Lambda",
+        yname="Accuracy"
+    )})
 
 
 
