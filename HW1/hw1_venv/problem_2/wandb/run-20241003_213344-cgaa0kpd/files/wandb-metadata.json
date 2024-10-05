@@ -1,0 +1,32 @@
+{
+  "os": "Windows-10-10.0.22631-SP0",
+  "python": "3.11.5",
+  "startedAt": "2024-10-04T01:33:44.515646Z",
+  "program": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW1\\hw1_venv\\problem_2\\model_testing.py",
+  "codePath": "HW1\\hw1_venv\\problem_2\\model_testing.py",
+  "git": {
+    "remote": "https://github.com/GoldenEXPn/CSC277.git",
+    "commit": "0cc04f9ad801c560fbed634759725b4bdcbef461"
+  },
+  "email": "tzhou25@u.rochester.edu",
+  "root": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW1\\hw1_venv\\problem_2",
+  "host": "DESKTOP-GVV906V",
+  "username": "Tianyi Z",
+  "executable": "C:\\Users\\Tianyi Z\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "codePathLocal": "model_testing.py",
+  "cpu_count": 12,
+  "cpu_count_logical": 24,
+  "disk": {
+    "/": {
+      "total": "2047987412992",
+      "used": "1234996871168"
+    }
+  },
+  "memory": {
+    "total": "33442263040"
+  },
+  "cpu": {
+    "count": 12,
+    "countLogical": 24
+  }
+}

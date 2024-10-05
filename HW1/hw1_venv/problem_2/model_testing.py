@@ -1,14 +1,12 @@
-import torch
-import torch.nn.functional as F
-from contextlib import contextmanager
-
-
 # functions used for pre-train testing
 
 # Data Leakage Check
 ## use the returned datasets from get_dataset() to check for data leakage, instead of using the source code
 '''from utils.datasets import get_dataset, check_leakage_using_hash
 train_dataset, val_dataset, test_dataset = get_dataset()'''
+from torchvision.datasets import CIFAR10
+from torchvision.transforms.v2.functional import rgb_to_grayscale_image
+
 # check_leakage_using_hash(train_dataset, val_dataset, test_dataset)
 
 
@@ -69,7 +67,11 @@ lr_finder.reset()
 
 
 ## Check Dying ReLU
-'''from torch.utils.data import DataLoader
+'''
+import torch
+import torch.nn.functional as F
+from contextlib import contextmanager
+from torch.utils.data import DataLoader
 from utils.datasets import get_testset
 from utils.trained_models import get_trained_model, get_summary
 
@@ -114,34 +116,93 @@ check_dying_relu(trained_model, test_loader)
 get_summary(relu_stats)'''
 
 ## Model Robustness
+import torch
+import wandb
+from utils.datasets import get_testset
+from torch.utils.data import DataLoader
+from sklearn.metrics import accuracy_score
+from torchvision.transforms import transforms
+from utils.trained_models import get_trained_model
+from torchvision.transforms import functional as F
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = get_trained_model().to(device)
+
+def evaluate(model, data_loader, device):
+    model.eval()
+    cor_preds=0
+    total_preds=0
+    with torch.no_grad():
+        for inputs, labels in data_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs.data, 1)
+            total_preds += labels.size(0)
+            cor_preds += torch.sum(preds == labels.data).item()
+    return cor_preds / total_preds
+
 
 # Brightness Test
-from torch.utils.data import DataLoader
-from utils.datasets import get_testset
-from utils.trained_models import get_trained_model, evaluate_brightness_robustness
+lambda_factors = [0.2, 0.4, 0.6, 0.8, 1.0]
+result = {}
+
+
+'''
+    wandb.init(project="277 Robustness Test", name="brightness_test")
+    for factor in lambda_factors:
+    test_dataset = get_testset()
+    brightness_transform = transforms.Compose([
+        transforms.Lambda(lambda img: F.adjust_brightness(img, factor)),
+        *test_dataset.dataset.transform.transforms
+    ])
+    test_dataset.dataset.transform = brightness_transform
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    accuracy = evaluate(model, test_loader, device)
+    wandb.log({'lambda_factor': factor, 'accuracy': accuracy})
+    print(f'lambda_factor: {factor}, accuracy: {accuracy}')'''
+
+
+# Rotation Test
+'''wandb.init(project="277 Robustness Test", name="rotation_test")
+for angle in range(0, 360, 60):
+    test_dataset = get_testset()
+    rotation_transform = transforms.Compose([
+        transforms.Lambda(lambda img: F.rotate(img, angle)),
+        *test_dataset.dataset.transform.transforms
+    ])
+    test_dataset.dataset.transform = rotation_transform
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    accuracy = evaluate(model, test_loader, device)
+    wandb.log({'rotation_angle': angle, 'accuracy': accuracy})
+    print(f'rotation_angle: {angle}, accuracy: {accuracy}')'''
+
+
+# Normalization Mismatch
+import numpy as np
+from PIL import Image
+
+def calculate_stats(dataset):
+    rgb_values_list = []
+    for img,_ in dataset:
+        img = transforms.ToPILImage()(img)
+        rgb_values_list.append(np.asarray(img).reshape(-1, 3)) # reshape to rgb channel
+    rgb_values = np.concatenate(rgb_values_list, axis=0) / 255.0
+    return np.mean(rgb_values, axis=0), np.std(rgb_values, axis=0)
+
+# Calculate test set stats
 test_dataset = get_testset()
-test_loader = DataLoader(test_dataset, batch_size=32)
-trained_model = get_trained_model()
-evaluate_brightness_robustness(trained_model, test_loader)
+mu_test, mu_std = calculate_stats(test_dataset)
 
+# Calculate train set stats
+train_set = CIFAR10(root='./data', train=True, download=True, transform=transforms.ToTensor())
+train_loader = DataLoader(train_set, batch_size=32, shuffle=False, num_workers=0)
+data = next(iter(train_loader))
+images, labels = data
+mu_train = images.mean([0,2,3])
+std_train = images.std([0,2,3])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Examine differences
+print(f'Testing mean: {mu_test}, std: {mu_std}')
+print(f'Testing mean: {mu_train}, std: {std_train}')
 
 
 

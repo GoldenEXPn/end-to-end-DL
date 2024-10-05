@@ -105,51 +105,20 @@ def get_summary(relu_stats):
 
 
 ## Function to test robustness
-# Test for brightness
-import wandb
-import torchvision
-from torch.utils.data import DataLoader
-from sklearn.metrics import accuracy_score
-from torchvision.transforms import transforms
 
-def adjust_brightness(dataset, lamb):
-    transform = transforms.Compose([transforms.Lambda(lambda img: torchvision.transforms.functional.adjust_brightness(img, lamb)), transforms.ToTensor()])
-    dataset.transform = transform
-    return dataset
-
-def evaluate_model_brightness(trained_model, test_dataset, lamb):
-    test_dataset = adjust_brightness(test_dataset, lamb)
-    test_loader = DataLoader(test_dataset)
-    all_y, all_y_hat=[],[]
-    trained_model.eval()
-    with torch.no_grad():
-        for inputs, labels in test_loader:
-            y = trained_model(inputs)
-            _, y = torch.max(y, 1)
-            all_y.extend(y.cpu().numpy())
-            all_y_hat.append(labels.cpu().numpy())
-    accuracy = accuracy_score(all_y_hat, all_y)
-    return accuracy
-
-def evaluate_brightness_robustness(trained_model, test_loader):
-    lambda_brightness = [0.2, 0.4, 0.6, 0.8, 1.0]
-    results = {}
-
-    for lamb in lambda_brightness:
-        accuracy = evaluate_model_brightness(trained_model, test_loader, lamb)
-        results[lamb] = accuracy
-        wandb.log({'lambda': lamb, 'accuracy': accuracy})
 
     # Plot final curve
-    wandb.log({'accuracy_curve': wandb.plot.line_series(
-        xs = list(results.keys()),
-        ys = list(results.values()),
-        keys=["Accuracy"],
-        title="Model Accuracy vs. Brightness",
-        xname="Brightness Lambda",
-        yname="Accuracy"
-    )})
+    # wandb.log({'accuracy_curve': wandb.plot.line_series(
+    #     xs = list(results.keys()),
+    #     ys = list(results.values()),
+    #     keys=["Accuracy"],
+    #     title="Model Accuracy vs. Brightness",
+    # )})
 
+
+## Check Robustness on Rotation
+def rotate_dataset(test_dataset):
+    return test_dataset
 
 
 
