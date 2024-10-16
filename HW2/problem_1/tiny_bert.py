@@ -1,14 +1,15 @@
 
 
-
-# Part 2.1
+# Part 3
 import time
 import torch
 import datasets
-from transformers import RobertaTokenizer, RobertaForSequenceClassification, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score
+from peft import LoraConfig, get_peft_model, TaskType
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments, DataCollatorWithPadding
 
 
+# noinspection DuplicatedCode
 def tokenize_function(examples):
     return tokenizer(examples['text'], padding="max_length", truncation=True)  # default max_length=512
 
@@ -26,18 +27,24 @@ def count_params(model):
     print(f'total params: {total_params}, trainable params: {trainable_params}')
 
 data = datasets.load_dataset("tweet_eval", name="sentiment")
-tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+tokenizer = AutoTokenizer.from_pretrained("huawei-noah/TinyBERT_General_4L_312D")
+data_collator = DataCollatorWithPadding(tokenizer)  # Dynamic padding
 tokenized_data = data.map(tokenize_function, batched=True)
-model = RobertaForSequenceClassification.from_pretrained("roberta-base", num_labels=3)
+model = AutoModelForSequenceClassification.from_pretrained("huawei-noah/TinyBERT_General_4L_312D", num_labels=3)
+
+# Inject lora
+peft_config=LoraConfig(task_type=TaskType.SEQ_CLS, inference_mode=False, r=8)
+model = get_peft_model(model, peft_config)
+
 # hyperparam args
+# noinspection DuplicatedCode
 training_args = TrainingArguments(
     output_dir='./results',
     num_train_epochs=1,
     per_device_train_batch_size=32,
-    per_device_eval_batch_size=64,
+    per_device_eval_batch_size=32,
     eval_strategy='epoch',
     save_strategy='epoch',
-    logging_dir = './logs',
     logging_steps=100,
     load_best_model_at_end=True,
 )
@@ -48,6 +55,7 @@ trainer = Trainer(
     train_dataset=tokenized_data['train'],
     eval_dataset=tokenized_data['validation'],
     compute_metrics=compute_metrics,
+    data_collator=data_collator,
 )
 
 # Initialize training
@@ -65,7 +73,7 @@ else:
     print('GPU not used for training')
 test_results = trainer.evaluate(tokenized_data['test'])
 print(f'Test loss: {test_results["eval_loss"]:.4f}')
-print(f'Test acc: {test_results["eval_accuracy"]:.4f}')
+print(f'Test acc: {test_results["eval_acc"]:.4f}')
 print(f'Test F1 Score: {test_results["eval_f1_score"]:.4f}')
 
 
