@@ -1,7 +1,6 @@
 import os
+import clip
 import torch
-from transformers.models.pixtral.image_processing_pixtral import convert_to_tensor
-
 import wandb
 import pandas as pd
 from PIL import Image
@@ -17,15 +16,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class ImageEncoder(nn.Module):
     def __init__(self, output_dim=128):
         super(ImageEncoder, self).__init__()
-        self.resnet = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.feature_extractor = nn.Sequential(*list(self.resnet.children())[:-1])  # Remove the last layer
-        self.feature_extractor = self.feature_extractor.to(device)  # Move all layers to GPU
-        self.fc = nn.Linear(self.resnet.fc.in_features,  output_dim)
+        self.clip_model, _ = clip.load("ViT-B/32", device=device)  # Load CLIP model
+        self.fc = nn.Linear(self.clip_model.visual.output_dim, output_dim)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         with torch.no_grad():
-            x = self.feature_extractor(x).squeeze()
+            x = self.clip_model.encode_image(x)
         x = self.relu(self.fc(x))
         return x
 
@@ -181,29 +178,6 @@ if __name__ == '__main__':
     wandb.log({'test_accuracy': test_accuracy, 'test_loss': test_loss})
     print(f'Test Accuracy: {test_accuracy:.2f}%')
     torch.save(model.state_dict(), 'ResNet_SBERT.pth')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
