@@ -1,7 +1,5 @@
 import os
 import torch
-from transformers.models.pixtral.image_processing_pixtral import convert_to_tensor
-
 import wandb
 import pandas as pd
 from PIL import Image
@@ -25,7 +23,7 @@ class ImageEncoder(nn.Module):
 
     def forward(self, x):
         with torch.no_grad():
-            x = self.feature_extractor(x).squeeze()
+            x = self.feature_extractor(x).squeeze()  # (1, 2048)
         x = self.relu(self.fc(x))
         return x
 
@@ -138,7 +136,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, pin_memory=True)
 
     # Train the model
-    wandb.init(
+    '''wandb.init(
         project='277_hw2',
         name=f'ResNet_SBERT_lr={lr}_batch_size={batch_size}_epochs={num_epochs}',
         config={
@@ -147,7 +145,7 @@ if __name__ == '__main__':
             "batch_size": batch_size,
             "model": ["ResNet-50", "all-MiniLM-L6-v2"],
         }
-    )
+    )'''
     model = CombinedModel().to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -159,26 +157,29 @@ if __name__ == '__main__':
         for images, questions, labels in train_loader:
             images, labels = images.to(device, non_blocking=True), labels.to(device, non_blocking=True)
             texts = list(questions)  # Text processed within the model
+            print(questions)
 
             optimizer.zero_grad()
             outputs = model(images, texts)
+            print(f'output:{outputs}')
+            print(f'target:{labels}')
             # print(f'outputs.dtype: {outputs.dtype}, labels.dtype: {labels.dtype}')
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-            wandb.log({'train_loss_step': loss.item()})
+            # wandb.log({'train_loss_step': loss.item()})
         avg_train_loss = total_loss / len(train_loader)
 
         # Validation
         val_loss, val_accuracy = compute_accuracy(model, val_loader)
         scheduler.step(val_loss)
-        wandb.log({'epoch': n, 'train_loss': avg_train_loss, 'val_accuracy': val_accuracy, 'val_loss': val_loss})
+        # wandb.log({'epoch': n, 'train_loss': avg_train_loss, 'val_accuracy': val_accuracy, 'val_loss': val_loss})
         print(f'Epoch {n+1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Accuracy: {val_accuracy:.2f}')
 
     # Test
     test_loss, test_accuracy = compute_accuracy(model, test_loader)
-    wandb.log({'test_accuracy': test_accuracy, 'test_loss': test_loss})
+    # wandb.log({'test_accuracy': test_accuracy, 'test_loss': test_loss})
     print(f'Test Accuracy: {test_accuracy:.2f}%')
     torch.save(model.state_dict(), 'ResNet_SBERT.pth')
 

@@ -1,0 +1,43 @@
+{
+  "os": "Windows-11-10.0.22631-SP0",
+  "python": "3.12.7",
+  "startedAt": "2024-10-20T03:51:01.162968Z",
+  "program": "D:\\Study\\CSC\\CSC277\\HW2\\problem_2\\CLIP_sBERT.py",
+  "codePath": "HW2\\problem_2\\CLIP_sBERT.py",
+  "git": {
+    "remote": "https://github.com/GoldenEXPn/CSC277.git",
+    "commit": "0c50a0e9dee46fc9fdff3057d3d088c0b20ab2c1"
+  },
+  "email": "tzhou25@u.rochester.edu",
+  "root": "D:\\Study\\CSC\\CSC277\\HW2\\problem_2",
+  "host": "GoldenLaptop",
+  "username": "zty13",
+  "executable": "C:\\Users\\zty13\\anaconda3\\envs\\277hw\\python.exe",
+  "codePathLocal": "CLIP_sBERT.py",
+  "cpu_count": 14,
+  "cpu_count_logical": 20,
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "2000381014016",
+      "used": "188560977920"
+    }
+  },
+  "memory": {
+    "total": "34014814208"
+  },
+  "cpu": {
+    "count": 14,
+    "countLogical": 20
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "memoryTotal": "4294967296",
+      "cudaCores": 2048,
+      "architecture": "Ampere"
+    }
+  ],
+  "cudaVersion": "12.5"
+}
