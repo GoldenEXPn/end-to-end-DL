@@ -1,11 +1,12 @@
 # you might need to install transformers lib
 # to install it use
 # pip install transformers
-
+import torch
 from transformers import pipeline
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load Microsoft Phi-1.5 model for text generation
-generator = pipeline("text-generation", model="microsoft/phi-1_5")
+generator = pipeline("text-generation", model="microsoft/phi-1_5", device=device)
 
 # Statements to fact-check
 statements = [
@@ -15,6 +16,8 @@ statements = [
     "Bats are blind.",
     "Sharks are mammals.",
     # Add your own statements here
+    "I am tired af.",
+    "The end is coming.",
 ] 
 
 # Prompt styles
@@ -25,7 +28,8 @@ prompts = {
     Statement: "The Eiffel Tower is located in Paris."
     Answer: True
     Statement: "{}"
-    Answer:"""
+    Answer:""",
+    "expert_prompt": "You are a world-renowned fact-checker. Please carefully verify the following statement and explain whether it is true or false in detail: {}"
 }
 
 def fact_check(prompt_style, statement):
@@ -38,6 +42,7 @@ def fact_check(prompt_style, statement):
 
 # Testing all statements with each prompt style
 for statement in statements:
+    print('------------------------------------------------------')
     print(f"\nStatement: {statement}\n")
     
     for style in prompts:

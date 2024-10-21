@@ -1,0 +1,53 @@
+{
+    "os": "Windows-10-10.0.22631-SP0",
+    "python": "3.9.20",
+    "heartbeatAt": "2024-10-20T06:51:28.599165",
+    "startedAt": "2024-10-20T06:51:27.015729",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW2\\problem_2\\CLIP_sBERT.py",
+    "codePathLocal": "CLIP_sBERT.py",
+    "codePath": "HW2\\problem_2\\CLIP_sBERT.py",
+    "git": {
+        "remote": "https://github.com/GoldenEXPn/CSC277.git",
+        "commit": "be62a5eee753fb1048b6e96650eca80315198715"
+    },
+    "email": "zty1378212047@gmail.com",
+    "root": "C:/Users/Tianyi Z/Desktop/school work/CSC277",
+    "host": "DESKTOP-GVV906V",
+    "username": "Tianyi Z",
+    "executable": "C:\\opt\\conda_envs\\277hw\\python.exe",
+    "cpu_count": 12,
+    "cpu_count_logical": 24,
+    "cpu_freq": {
+        "current": 4701.0,
+        "min": 0.0,
+        "max": 4701.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4701.0,
+            "min": 0.0,
+            "max": 4701.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1907.3369102478027,
+            "used": 1226.1054725646973
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+            "memory_total": 17171480576
+        }
+    ],
+    "memory": {
+        "total": 31.14553451538086
+    }
+}

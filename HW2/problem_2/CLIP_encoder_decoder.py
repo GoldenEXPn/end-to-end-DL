@@ -5,26 +5,27 @@ import wandb
 import pandas as pd
 from PIL import Image
 import torch.nn as nn
-import torchvision.transforms as transforms
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, Dataset
-from sentence_transformers import SentenceTransformer
 
+
+# Default Setup
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 clip_model, clip_preprocess = clip.load('ViT-B/32', device=device)
-clip_model = clip_model.float()
+clip_model = clip_model.float().to(device)
+clip_model.eval()
 
 
 class ImageEncoder(nn.Module):
     def __init__(self, clip_model, output_dim=128):
         super(ImageEncoder, self).__init__()
         self.clip_model = clip_model
-        self.image_encoder = self.clip_model.visual.to(device)
+        self.image_encoder = self.clip_model.visual
         self.output_dim = output_dim
         # Freeze clip model weights
         for param in self.image_encoder.parameters():
             param.requires_grad = False
-        self.fc = nn.Linear(self.image_encoder.output_dim, output_dim).to(device)
+        self.fc = nn.Linear(self.image_encoder.output_dim, output_dim)
         self.relu = nn.ReLU()
 
     def forward(self, x):
@@ -34,25 +35,29 @@ class ImageEncoder(nn.Module):
 
 
 class TextEncoder(nn.Module):
-    def __init__(self, output_dim=128):
+    def __init__(self, clip_model, output_dim=128):
         super(TextEncoder, self).__init__()
-        self.sbert = SentenceTransformer('all-MiniLM-L6-v2').to(device)  # Move all layers to GPU
-        self.fc = nn.Linear(384, output_dim)  # sBERT embedding size is 384
+        self.clip_model = clip_model
+        self.text_encoder = self.clip_model.encode_text
+        self.output_dim = output_dim
+        # Freeze clip model weights
+        for param in self.clip_model.parameters():
+            param.requires_grad = False
+        self.fc = nn.Linear(self.clip_model.transformer.width, output_dim)
         self.relu = nn.ReLU()
 
-    def forward(self, texts):
+    def forward(self, textx):
+        tokens = clip.tokenize(textx).to(device)
         with torch.no_grad():
-            embeddings = self.sbert.encode(texts, convert_to_tensor=True)
-        embeddings = embeddings.to(device)
-        x = self.relu(self.fc(embeddings))
-        return x
+            embeddings = self.text_encoder(tokens)
+        return self.relu(self.fc(embeddings))
 
 
-class CombinedModel(nn.Module):
+class CLIP(nn.Module):
     def __init__(self, clip_model, num_classes=30, embedding_dim=128):
-        super(CombinedModel, self).__init__()
+        super(CLIP, self).__init__()
         self.image_encoder = ImageEncoder(clip_model, output_dim=embedding_dim)
-        self.text_encoder = TextEncoder(output_dim=embedding_dim)
+        self.text_encoder = TextEncoder(clip_model, output_dim=embedding_dim)
         self.classifier = nn.Sequential(
             nn.Linear(embedding_dim*2, num_classes)
         )
@@ -148,10 +153,12 @@ if __name__ == '__main__':
             "model": ["CLIP", "all-MiniLM-L6-v2"],
         }
     )
-    model = CombinedModel(clip_model).to(device)
+    model = CLIP(clip_model).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=1, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=1)
+    scaler = torch.cuda.amp.GradScaler()
+    # Train loop
     for n in range(num_epochs):
         # Train
         model.train()
@@ -161,11 +168,14 @@ if __name__ == '__main__':
             texts = list(questions)  # Text processed within the model
 
             optimizer.zero_grad()
-            outputs = model(images, texts)
+            with torch.cuda.amp.autocast('cuda'):
+                outputs = model(images, texts)
             # print(f'outputs.dtype: {outputs.dtype}, labels.dtype: {labels.dtype}')
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+                loss = criterion(outputs, labels)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
             total_loss += loss.item()
             wandb.log({'train_loss_step': loss.item()})
         avg_train_loss = total_loss / len(train_loader)
@@ -180,7 +190,7 @@ if __name__ == '__main__':
     test_loss, test_accuracy = compute_accuracy(model, test_loader)
     wandb.log({'test_accuracy': test_accuracy, 'test_loss': test_loss})
     print(f'Test Accuracy: {test_accuracy:.2f}%')
-    torch.save(model.state_dict(), 'ResNet_SBERT.pth')
+    torch.save(model.state_dict(), 'CLIP_encoder_decoder.pth')
 
 
 

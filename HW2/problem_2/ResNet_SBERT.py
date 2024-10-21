@@ -43,9 +43,9 @@ class TextEncoder(nn.Module):
         return x
 
 
-class CombinedModel(nn.Module):
+class ResNet_sBERT(nn.Module):
     def __init__(self, num_classes=30, embedding_dim=128):
-        super(CombinedModel, self).__init__()
+        super(ResNet_sBERT, self).__init__()
         self.image_encoder = ImageEncoder(output_dim=embedding_dim)
         self.text_encoder = TextEncoder(output_dim=embedding_dim)
         self.classifier = nn.Sequential(
@@ -146,7 +146,7 @@ if __name__ == '__main__':
             "model": ["ResNet-50", "all-MiniLM-L6-v2"],
         }
     )'''
-    model = CombinedModel().to(device)
+    model = ResNet_sBERT().to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=1, verbose=True)
