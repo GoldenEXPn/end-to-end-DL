@@ -1,0 +1,139 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for rotated page geometry
+\usepackage[parfill]{parskip}    			% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or epsÂ§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage{algorithm}   
+\usepackage{algpseudocode} 
+\newcommand{\ck}[1]{\textcolor{cyan}{CK: #1}}
+\newcommand{\jc}[1]{\textcolor{orange}{JC: #1}}
+\newcommand{\hm}[1]{\textcolor{blue}{HM: #1}}
+
+\title{Homework 3 \\ CSC 277 / 477 \\ End-to-end Deep Learning \\ Fall 2024}
+\author{John Doe - \texttt{jdoe@ur.rochester.edu}}
+\date{}					
+
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \textbf{Deadline:} See Blackboard    
+\end{center}
+
+
+\section*{Instructions}
+
+Your homework solution must be typed and prepared in \LaTeX. It must be output to PDF format. To use \LaTeX, we suggest using \url{http://overleaf.com}, which is free.
+
+Your submission must cite any references used (including articles, books, code, websites, and personal communications).  All solutions must be written in your own words, and you must program the algorithms yourself. \textbf{If you do work with others, you must list the people you worked with.} Submit your solutions as a PDF to Blackboard. 
+
+
+Your programs must be written in Python. The relevant code should be in the PDF you turn in. If a problem involves programming, then the code should be shown as part of the solution. One easy way to do this in \LaTeX \, is to use the verbatim environment, i.e., \textbackslash begin\{verbatim\} YOUR CODE \textbackslash end\{verbatim\}.
+
+
+
+
+
+
+
+
+\clearpage
+
+\section*{Problem 1: Distributed Model Training and Optimization Techniques (30 Points)}
+
+\subsection*{Part(a): Benefits and Challenges of Distributed Model Training (10 points)} 
+Distributed model training enables faster training times and allows scaling to larger datasets and models, but it also presents several challenges. Write a brief essay (around 200 words) addressing the following points:
+\begin{itemize}
+    \item \textbf{Benefits}: Discuss the advantages of distributed training, such as reduced training time, scalability, and the ability to handle large models and datasets that don’t fit on a single GPU. Include real-world examples (e.g., training models like GPT-3, BERT).
+    \item \textbf{Challenges}: Explore the difficulties, including communication overhead, model synchronization, and potential bottlenecks like straggler nodes. Use real-world scenarios where distributed training is essential (e.g., cloud-based environments, large-scale NLP models).
+\end{itemize}
+
+\textbf{Answer:}
+
+\subsection*{Part(b): Mixed-Precision Training and Activation Checkpointing (10 points)} 
+Distributed training often requires efficient memory and computational resource management. In this section, briefly discuss:
+\begin{itemize}
+    \item How \textbf{mixed-precision training} reduces memory usage and increases computational efficiency. Include a mathematical justification of how reducing the precision of floating-point operations can speed up training and lower memory requirements.
+    \item How \textbf{activation checkpointing} trades off memory for additional computation. Use examples to illustrate how recomputing activations can reduce memory usage but increase computation time.
+\end{itemize}
+
+\textbf{Answer:}
+
+\subsection*{Part(c): Comparing DataParallel and DistributedDataParallel in PyTorch (10 Points)}
+In this section, you'll explore two methods for multi-GPU training in PyTorch: \texttt{DataParallel} and \texttt{DistributedDataParallel}.
+\begin{itemize}
+    \item Read online tutorials on PyTorch's \href{https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html}{DataParallel} and \href{https://pytorch.org/tutorials/intermediate/ddp_tutorial.html}{DistributedDataParallel} methods. Starting with a single-GPU script, describe how to modify the code to enable DataParallel and to enable DistributedDataParallel. Focus on the changes needed in the \textbf{model definition} and \textbf{dataloader} (if required) and provide a \textbf{high-level description} of these changes.
+    \item Compare \textbf{DataParallel} and \textbf{DistributedDataParallel} based on:  (1) The workload needed to modify the code; (2) Typical run time for training; (3) Which method is more flexible and can be used in more situations and why?
+\end{itemize}
+
+\textbf{Answer:}
+
+
+\section*{Problem 2: Programming Task (30 Points)}
+In this section, you will build upon the code from Homework 1, Problem 1.
+
+\subsection*{Part(a) Effect of \texttt{num\_workers} in DataLoader: (10 Points)}
+One important hyperparameter that affects training time in HW1 is \texttt{num\_workers}, found in train.py under \texttt{loader\_args}. In this task, you’ll explore how this parameter impacts data loading speed.
+
+\textbf{Instructions:}
+\begin{itemize}
+    \item Measure the total run time for iterating through all batches in the \textbf{training set} as you increase \texttt{num\_workers} from 1 to 10.
+    \item Since no model training is required, create a script with only the necessary components for data loading.
+\end{itemize}
+
+\textbf{Questions:}
+\begin{itemize}
+    \item What is the default value of \texttt{num\_workers} in \texttt{torch.utils.data.DataLoader}? What does this default setting mean?
+    \item Plot the run time as \texttt{num\_workers} increases. What do you observe? Is the default setting optimal?
+\end{itemize}
+
+\textbf{Answer:}
+
+
+
+\subsection*{Part(b) Code Profiling: (10 Points)}
+Profiling your code is crucial for optimizing deep learning models. In this task, you’ll analyze the runtime of different components during model development.
+
+\textbf{Instructions:}
+\begin{itemize}
+    \item Modify train.py to record the \textbf{total time} spent in the following stages: (1) Data loading from the training DataLoader; (2) Model forward pass; (3) Loss calculation and backward pass; (4) Evaluation on the validation and test sets; (5)Other parts (i.e., overall runtime minus the above four parts).
+    \item You can simply use \texttt{time.time()} or any profiling tool of your choice.
+\end{itemize}
+
+\textbf{Questions:}
+\begin{itemize}
+    \item Briefly explain your method for recording the time taken for loading training data.
+    \item Create a pie chart showing the proportion of time spent on the five components. Also, present the results in a LaTeX table. Analyze the pattern, and propose one way to optimize training efficiency.
+\end{itemize}
+
+\textbf{Answer:}
+
+
+\subsection*{Part(c) Automatic Mixed Precision Training: (10 Points)}
+In this task, you’ll explore mixed precision training using \texttt{torch.amp}. Follow \href{https://pytorch.org/docs/stable/notes/amp_examples.html}{this tutorial}, focusing on the ``Typical Mixed Precision Training" section. Modify your code to enable mixed precision training.
+
+\textbf{Instructions:}
+\begin{itemize}
+    \item Compare the following aspects using your WandB logs: (1) Training loss dynamics; (2) Final model performance; (3) System metrics, including GPU memory usage, total run time, and other relevant logs you found interesting under the ``System" section in Wandb (these are automatically logged by Wandb during the experiments; x-axis in these plots indicates runtime).
+\end{itemize}
+
+\textbf{Questions:}
+\begin{itemize}
+    \item What did you observe in terms of training loss, final performance, and system metrics? What conclusions can you draw from these experiments?
+\end{itemize}
+
+\textbf{Answer:}
+
+
+
+
+\end{document}   
