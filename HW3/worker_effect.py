@@ -31,7 +31,7 @@ class OxfordPetDataset(Dataset):
 
 def record_time(data_loader, batch_size, num_worker):
     start_time = time.time()
-    for _ in tqdm(data_loader, batch_size, desc='load data'):
+    for _ in tqdm(data_loader, total=batch_size, desc='load data'):
         pass
     end_time = time.time() - start_time
     print(f'num_worker: {num_worker}, time: {end_time}')

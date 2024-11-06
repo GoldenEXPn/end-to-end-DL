@@ -1,0 +1,230 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for rotated page geometry
+\usepackage[parfill]{parskip}    			% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or epsÂ§ with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{mathtools}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage{algorithm}   
+\usepackage{algpseudocode} 
+\newcommand{\ck}[1]{\textcolor{cyan}{CK: #1}}
+\newcommand{\jc}[1]{\textcolor{orange}{JC: #1}}
+\newcommand{\hm}[1]{\textcolor{blue}{HM: #1}}
+
+\title{Homework 4 \\ CSC 277 / 477 \\ End-to-end Deep Learning \\ Fall 2024}
+\author{John Doe - \texttt{jdoe@ur.rochester.edu}}
+\date{}					
+
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \textbf{Deadline:} See Blackboard    
+\end{center}
+
+
+\section*{Instructions}
+
+Your homework solution must be typed and prepared in \LaTeX. It must be output to PDF format. To use \LaTeX, we suggest using \url{http://overleaf.com}, which is free.
+
+Your submission must cite any references used (including articles, books, code, websites, and personal communications).  All solutions must be written in your own words, and you must program the algorithms yourself. \textbf{If you do work with others, you must list the people you worked with.} Submit your solutions as a PDF to Blackboard. 
+
+
+Your programs must be written in Python. The relevant code should be in the PDF you turn in. If a problem involves programming, then the code should be shown as part of the solution. One easy way to do this in \LaTeX \, is to use the verbatim environment, i.e., \textbackslash begin\{verbatim\} YOUR CODE \textbackslash end\{verbatim\}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{About Homework 4:} In this assignment, we will study model calibration, conformal prediction. Copy and paste this template into an editor, e.g., \url{www.overleaf.com}, and then just type the answers in. You can use a math editor to make this easier, e.g., CodeCogs Equation Editor or MathType. \hyperlink{https://blog.writefull.com/texgpt-harness-the-power-of-chatgpt-in-overleaf/}{You may use the AI (LLM) plugin for Overleaf for help you with \LaTeX formatting.}
+
+
+%CodeCogs: \url{https://www.codecogs.com/latex/eqneditor.php}
+
+%MathType: \url{http://www.dessci.com/en/products/mathtype/}
+%For MathType, you have to tell it to export as LaTex. 
+
+
+\clearpage
+
+% \section*{Problem ? - Prompt Engineering}
+
+
+\section*{Problem 1 - Model Calibration (22 points)}
+
+
+ 
+
+\textbf{Model Calibration}: In probabilistic modeling, a model is said to be calibrated if, for all instances where it predicts a probability $p$ of an event occurring, the event actually occurs approximately $p \times100\% $ many times out of $100$ occurences. Formally, for a set of instances for which the model predicts a probability $p$, the ratio of those instances for which the event occurs should be close to $p$.
+
+\textbf{Real-life Example}: Consider a medical tool that predicts a 90\% likelihood of a specific disease. If 10 patients receive this 90\% prediction, around 9 of them should genuinely have the disease for the tool to be reliable. If only 5 of them have the disease, the tool's predictions are not calibrated well.
+
+\textbf{Evaluating Model Calibration}:
+\begin{enumerate}
+    \item \textbf{Reliability Curve}: A graph where predicted probabilities are on the x-axis, and the actual outcomes are on the y-axis. A perfectly accurate model will match the diagonal line (where \(y = x\)).
+    \item \textbf{Expected Calibration Error (ECE)}: A metric that quantifies the divergence of predictions from the truth. A lower ECE indicates a more calibrated model.
+    \item \textbf{Maximum Calibration Error (MCE)}: The largest difference between predicted probabilities and real outcomes. A lower MCE indicates better calibration.
+\end{enumerate}
+
+\subsection*{Problem Set:}
+For this homework's evaluation we will focus on reliability curves. For binary classification we provided you a modified version of CIFAR10 dataset which has only dog and cat classes (see the pyhton code). Use ResNet 18 model (you can start with pretrained weights). Do not forget to modify your network for binary classification.
+
+\subsection*{Part 1: Platt Scaling (8 points)}
+Platt Scaling is a post-processing method designed to transform the continuous-valued predictions of a classifier into calibrated probabilities. Although it was originally conceived for support vector machines, it has since been applied to many other types of models, notably deep neural networks.
+
+Given a binary classification task, let's assume the raw output (logit: the outputs of the final layer before applying the activation function.) of the model for an instance is denoted by \( z \). Platt Scaling fits the subsequent sigmoid function to these outputs:
+
+\[
+P(y=1|z) = \frac{1}{1 + \exp(A \cdot z + B)}
+\]
+
+In this equation, \( y \) represents the binary label, while \( A \) and \( B \) are parameters determined from a validation set. The objective is to minimize the negative log likelihood on this validation set in terms of \( A \) and \( B \).
+
+
+
+
+\textbf{Pseudo-code for Platt Scaling}:
+
+\begin{enumerate}
+    \item Train the primary model (e.g., a neural network) using the training dataset.
+    \item Obtain the logits (pre-activation outputs) of the primary model on a validation set.
+    \item Determine the parameters \( A \) and \( B \) through logistic regression, using the logits as input features and the actual labels of the validation set as targets.
+    \item For any new data point, to obtain the calibrated probability:
+    \begin{enumerate}
+        \item Process the data point with the primary model to get the logit, \( z \).
+        \item Calculate the probability using \( P(y=1|z) = \frac{1}{1 + \exp(A \cdot z + B)} \).
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{Your Task}:
+\begin{enumerate}
+    \item Use the binary classification dataset and the model info we provided to build and train that model. 
+    \item Draw reliability curve on the test data.
+    \item Implement Platt Scaling on the model's outputs on a validation set.
+    \item Draw reliability curve on the test data.
+    \item Assess the calibration using the two reliability curves you created in previous steps, comment on it.
+\end{enumerate}
+
+\subsection*{Part 2: Improving Calibration with Label Smoothing (14 points)}
+Label smoothing is a regularization technique in which the hard 0 and 1 labels are replaced with smoothed values. This can prevent overconfidence in predictions and may lead to better-calibrated models.
+
+\textbf{Your Task}:
+\begin{enumerate}
+    
+    \item Fine-tune the pretrained model from part 1 using label smoothing. Experiment with different smoothing values (e.g., 0.1, 0.2, 0.3) and evaluate the calibration of each model using a reliability curve. Compare them with each other and results from part 1 verbally (no extra plots needed).(4 points)
+
+    \item Train the model from scratch using label smoothing. Experiment with different smoothing values (e.g., 0.1, 0.2, 0.3) and evaluate calibration with a reliability curve. Compare them with each other and results from part 1 verbally (no extra plots needed).(4 points)
+
+    \item Apply Plat-Scaling on models from Part 1, item(1) and item(2) with smooth labels. Draw reliability curves and comment on results. (6 points)
+    
+\end{enumerate}
+
+\textbf{Deliverables}:
+\begin{enumerate}
+    \item Provide your answers to what is asked in the question. (both verbal comparisons and diagrams)
+    \item Provide your code for credit.
+\end{enumerate}
+
+\section*{Problem 2 - Conformal Prediction (18 points)}
+
+
+Conformal prediction (CP) is a framework used in machine learning and statistical prediction to provide reliable and well-calibrated measures of uncertainty for individual predictions. It was developed to address the limitations of traditional confidence intervals and prediction intervals, which may not always accurately capture the true uncertainty associated with a prediction.
+
+In CP, instead of providing a single point prediction, a set of predictions is generated for each data point. These prediction sets are constructed in such a way that they have a guaranteed level of coverage (often set by the user) over a set of future unseen data points. This means that the prediction sets are designed to capture the true target value with a certain probability.
+
+CP accomplishes this by using a calibration set (with length $n$), which contains examples that the model has not seen during training, to estimate the uncertainty associated with different prediction outcomes. It computes prediction sets $\tau(X_{n+1})$ that are expected to contain the true target value $Y_{n+1}$ with a specified level of confidence $(1-\alpha)$.
+
+\begin{equation}\label{eq:CP1}
+1-\alpha \leq \mathbb{P}\left [ Y_{n+1}\in \tau (X_{n+1}) \right ]\leq  1-\alpha+\frac{1}{n+1}
+\end{equation}
+
+The coverage theorem (Eq.\ref{eq:CP1}) in conformal prediction is a fundamental theorem that provides a guarantee of the reliability of prediction intervals generated by a conformal predictor. The coverage theorem relies on certain assumptions and conditions, such as exchangeability (the order of the data points should not affect the result of the data and correctness of the conformal predictor), and correctness (the conformal predictor should be calibrated properly).
+
+CP can be applied to any machine learning or statistical model, making it a versatile tool for quantifying uncertainty in various domains, including classification, regression, and anomaly detection
+.
+\subsection*{Algorithms Overview}
+In conformal prediction for any type of input ($X$) and output ($Y$), we start by estimating how uncertain our model is using a pre-trained model. We define a score function ($s(X,Y)$) that tells us how well the model's predictions match the actual outcomes (higher scores mean worse predictions). Next, we calculate a special value called the "quantile" ($\hat{q}$) based on these scores. This $\hat{q}$ helps us create prediction sets for new examples, giving us a way to understand how confident or uncertain our model is in its predictions.
+
+\subsection*{Problem Set:}
+To ease the your burden, we trained a ResNet model on the \href{https://www.kaggle.com/datasets/tanlikesmath/the-oxfordiiit-pet-dataset?select=images}{Oxford-IIIT Pet Dataset} on your behalf. By using that model we generated you softmax outputs and correct classes of the test dataset. Also, we provided a small set of images and their softmax outputs ("model\_outputs.npy"), class id to name map ("idx2cls.npy"), and gt labels  ("gt\_classes.npy") for visualization purposes. 
+
+For this part we want you to implement both naive and adaptive prediction sets algorithms.
+\subsection*{Part 1: Naive Algorithm}
+Score function:
+\begin{equation}\label{eq:nA1}
+s(X,Y)=\hat{f}(X)_{Y} 
+\end{equation}
+
+\begin{equation}\label{eq:nA2}
+1-\hat{q}=Quantile(s_1,\cdots,s_n;1-\frac{\lceil (n+1)(1-\alpha) \rceil}{n})
+\end{equation}
+Use Eq. \ref{eq:nA2} to calculate 1-quantile 
+\begin{equation}\label{eq:nA3}
+\tau (X) =\{ \pi_1(X),\cdots,\pi_k(X)\}
+\text{, where } k=sup \{m:\hat{f}(X)_{Y}<1-\hat{q}\}+1
+\end{equation}
+Use Eq.\ref{eq:nA3} to construct prediction set.
+
+\textbf{Your Task:} 
+Implement the Naive algorithm (5 points)
+\begin{enumerate}
+    \item Read `softmax\_outputs.npy' and `correct\_classes.npy' files. These files contain softmax outputs and the correct class label of the same output on the same array index.
+    \item Split the given data into calibration and validation datasets by putting the first \( n = 2000 \) elements in the calibration dataset and the rest into the validation dataset.
+    \item Use the calibration data to set up the naive algorithm.
+    \item Measure the empirical coverage of the produced prediction sets on the validation data. Report the coverage.
+    \item Check the algorithm on the example dataset which has images and .npy files with the same format. Show images with their labels and prediction sets; include this part in the report.
+\end{enumerate}
+
+
+\subsection*{Part 2: Adaptive Prediction Sets Algorithm}
+Score function:
+\begin{equation}\label{eq:A1}
+s(X,Y)=\sum_{j=1}^{k}\hat{f}(X)_{\pi_j(X)} \text{, and } \pi(x)_k=Y
+\end{equation}
+where $\pi(x)$ is the permutation of $\{1, ..., K\}$ that sorts $\hat{f}(X)$ from most likely to least likely.
+
+\begin{equation}\label{eq:A2}
+\hat{q}=Quantile(s_1,\cdots,s_n;\frac{\lceil (n+1)(1-\alpha) \rceil}{n})
+\end{equation}
+Use Eq. \ref{eq:A2} to calculate quantile
+\begin{equation}\label{eq:A3}
+\tau (X) =\{ \pi_1(X),\cdots,\pi_k(X)\}
+\text{, where } k=sup \{m:\sum_{m}^{j=1}\hat{f}(X)_{\pi_j(X)}<\hat{q}\}+1
+\end{equation}
+Use Eqs.\ref{eq:A3} to construct prediction set.
+
+\textbf{Your Task:} Implement the adaptive prediction sets algorithm (5 points)
+\begin{enumerate}
+    \item Read `softmax\_outputs.npy' and `correct\_classes.npy' files. These files contain softmax outputs and the correct class label of the same output on the same array index.
+    \item Split the given data into calibration and validation datasets by putting the first \( n = 2000 \) elements in the calibration dataset and the rest into the validation dataset.
+    
+    \item Use the calibration data to set up the adaptive prediction sets algorithm.
+    
+    \item Measure the empirical coverage of the produced prediction sets on the validation data. Report the coverage.
+    
+    \item Check the algorithm on the example dataset which has images and .npy files with the same format. Show images with their labels and prediction sets; include this part in the report.
+\end{enumerate}
+
+\subsection*{Part 3: Comparison  of Part 1 and Part 2 Results (3ponts)} Compare visual results, and comment on algorithms; discuss potential improvements to the process .
+
+\subsection*{Part 4: (5 points)} 
+For this exercise, you will explore how the nature of prediction sets changes based on the heuristic scores used to generate them.
+\begin{enumerate}
+    \item Instead of using the model's softmax scores, generate random scores for each class for each input in your validation dataset. (Just replace validation data with a random array with values between [0,1].) Use these random scores as your heuristic and generate prediction sets. Evaluate these prediction sets and note down the coverage.
+    \item Compare the results from the all approaches. Discuss the differences in prediction set quality, coverage, and any other observed phenomena. What do these results tell you about the importance of the heuristic function in generating prediction sets? 
+\end{enumerate}
+
+Report your code and answers to verbal questions.
+
+ 
+
+
+
+\end{document}   

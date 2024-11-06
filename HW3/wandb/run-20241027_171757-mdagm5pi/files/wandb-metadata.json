@@ -1,0 +1,47 @@
+{
+  "os": "Windows-10-10.0.22631-SP0",
+  "python": "3.11.10",
+  "startedAt": "2024-10-27T21:17:57.867456Z",
+  "args": [
+    "--run_name",
+    "Pretrained ResNet-18 AMP"
+  ],
+  "program": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW3\\amp_model.py",
+  "codePath": "HW3\\amp_model.py",
+  "git": {
+    "remote": "https://github.com/GoldenEXPn/CSC277.git",
+    "commit": "8b3e4cc0a11545dda9935c9e16749cc4f0631b84"
+  },
+  "email": "tzhou25@u.rochester.edu",
+  "root": "C:\\Users\\Tianyi Z\\Desktop\\school work\\CSC277\\HW3",
+  "host": "DESKTOP-GVV906V",
+  "username": "Tianyi Z",
+  "executable": "C:\\opt\\conda_envs\\test\\python.exe",
+  "codePathLocal": "amp_model.py",
+  "cpu_count": 12,
+  "cpu_count_logical": 24,
+  "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "2047987412992",
+      "used": "1357665218560"
+    }
+  },
+  "memory": {
+    "total": "67802001408"
+  },
+  "cpu": {
+    "count": 12,
+    "countLogical": 24
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+      "memoryTotal": "17171480576",
+      "cudaCores": 8448,
+      "architecture": "Ada"
+    }
+  ],
+  "cudaVersion": "12.6"
+}

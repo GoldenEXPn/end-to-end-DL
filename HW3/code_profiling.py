@@ -171,7 +171,6 @@ def train_model(
             with tqdm(total=batch_steps * batch_size, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
                 data_loading_start_time = time.time()
                 for inputs, labels in train_loader:
-
                     # Data loading
                     data_loading_end_time = time.time()
                     data_loading_time += data_loading_end_time - data_loading_start_time
@@ -226,8 +225,8 @@ def train_model(
                             torch.save(state_dict, os.path.join(save_dir, f'{run_name}_{rid}', 'checkpoint.pth'))
                             print(f'Checkpoint at step {global_step} saved!')
                         wandb.log({'learning_rate': cur_lr})
-
                     pbar.set_postfix(**{'loss (batch)': loss.item()})
+                    data_loading_start_time = time.time()
             wandb.log({'epoch': epoch})
 
     # Log Code profiling
