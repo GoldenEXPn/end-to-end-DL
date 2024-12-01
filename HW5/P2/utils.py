@@ -93,6 +93,7 @@ def online_training(model, train_stream, test_stream, device, batch_size=32):
             print(f"\t Accuracy on split {test_idx}: {accuracy}")
     return
 
+
 #### SLDA Training
 
 def pool_feat(features):
