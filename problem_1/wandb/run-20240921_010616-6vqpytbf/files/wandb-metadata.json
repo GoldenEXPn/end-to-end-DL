@@ -1,0 +1,53 @@
+{
+    "os": "Windows-11-10.0.22631-SP0",
+    "python": "3.12.0",
+    "heartbeatAt": "2024-09-21T05:06:17.126579",
+    "startedAt": "2024-09-21T05:06:16.647435",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\yinha\\Documents\\CSC277\\Homework2\\problem_1\\fine_tuning.py",
+    "codePathLocal": "fine_tuning.py",
+    "codePath": "Homework2\\problem_1\\fine_tuning.py",
+    "git": {
+        "remote": "https://github.com/Fight-Ronin/CSC277.git",
+        "commit": "37ebd73f8b39c57c74b51fd49c888e1c6f659261"
+    },
+    "email": "yinhanzhang332@gmail.com",
+    "root": "C:/Users/yinha/Documents/CSC277",
+    "host": "Henry",
+    "username": "yinha",
+    "executable": "C:\\Users\\yinha\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "cpu_count": 24,
+    "cpu_count_logical": 32,
+    "cpu_freq": {
+        "current": 3000.0,
+        "min": 0.0,
+        "max": 3000.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3000.0,
+            "min": 0.0,
+            "max": 3000.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 930.8115196228027,
+            "used": 851.500732421875
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4070",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4070",
+            "memory_total": 12878610432
+        }
+    ],
+    "memory": {
+        "total": 31.832599639892578
+    }
+}

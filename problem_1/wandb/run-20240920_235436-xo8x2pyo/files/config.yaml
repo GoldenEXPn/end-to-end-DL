@@ -1,0 +1,59 @@
+wandb_version: 1
+
+model:
+  desc: null
+  value: roberta-base
+dataset:
+  desc: null
+  value: Tweet Eval Sentiment
+epochs:
+  desc: null
+  value: 1
+batch_size:
+  desc: null
+  value: 16
+_wandb:
+  desc: null
+  value:
+    python_version: 3.12.0
+    cli_version: 0.16.6
+    framework: huggingface
+    huggingface_version: 4.44.2
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1726890876.0
+    t:
+      1:
+      - 1
+      - 5
+      - 11
+      - 49
+      - 51
+      - 53
+      - 55
+      - 71
+      2:
+      - 1
+      - 5
+      - 11
+      - 49
+      - 51
+      - 53
+      - 55
+      - 71
+      3:
+      - 16
+      - 23
+      4: 3.12.0
+      5: 0.16.6
+      6: 4.44.2
+      8:
+      - 3
+      - 5
+      13: windows-amd64
+total_params:
+  desc: null
+  value: 124647939
+trainable_params:
+  desc: null
+  value: 124647939
